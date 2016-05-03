@@ -2,10 +2,17 @@ package b9
 
 import (
 	"errors"
+	"net/http"
 	"strconv"
+
+	"golang.org/x/net/html"
 
 	"github.com/PuerkitoBio/goquery"
 )
+
+type API struct {
+	UA string
+}
 
 type Info struct {
 	Title  string `json:"title"`
@@ -14,19 +21,44 @@ type Info struct {
 	Time   string `json:"time"`
 }
 
-func GetNormal(n int) ([]Info, error) {
+func NewAPI() *API {
+	return &API{
+		"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:46.0) Gecko/20100101 Firefox/46.0",
+	}
+}
+
+func (api *API) SetUA(ua string) {
+	api.UA = ua
+}
+
+func (api *API) GetNormal(n int) ([]Info, error) {
 	url := "http://up.b9dm.com/index.php/video/show/cid/5/order/2/page/" + strconv.Itoa(n)
-	return getInfo(url)
+	return getInfo(url, api.UA)
 }
 
-func GetHD(n int) ([]Info, error) {
+func (api *API) GetHD(n int) ([]Info, error) {
 	url := "http://up.b9dm.com/index.php/video/show/cid/56/order/2/page/" + strconv.Itoa(n)
-	return getInfo(url)
+	return getInfo(url, api.UA)
 }
 
-func getInfo(url string) ([]Info, error) {
+func getInfo(url string, ua string) ([]Info, error) {
 	var ret []Info
-	doc, err := goquery.NewDocument(url)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("User-Agent", ua)
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+	root, err := html.Parse(res.Body)
+	if err != nil {
+		return nil, err
+	}
+	doc := goquery.NewDocumentFromNode(root)
+
 	if err != nil {
 		return nil, err
 	}
