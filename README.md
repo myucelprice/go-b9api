@@ -9,11 +9,12 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/ieee0824/b9"
+	"github.com/myucelprice/go-b9api"
 )
 
 func main() {
-	datas, _ := b9.GetHD(2)
+	api := b9.NewAPI()
+	datas, _ := api.GetHD(2)
 	for _, data := range datas {
 		js, _ := json.MarshalIndent(data, "", "\t")
 		fmt.Println(string(js))
