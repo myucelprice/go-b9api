@@ -15,10 +15,11 @@ type API struct {
 }
 
 type Info struct {
-	Title  string `json:"title"`
-	Src    string `json:"src"`
-	ImgURL string `json:"img_url"`
-	Time   string `json:"time"`
+	Title      string `json:"title"`
+	ShortTitle string `json:"short_title"`
+	Src        string `json:"src"`
+	ImgURL     string `json:"img_url"`
+	Time       string `json:"time"`
 }
 
 func NewAPI() *API {
@@ -71,7 +72,8 @@ func getInfo(url string, ua string) ([]Info, error) {
 		src := a.Eq(1)
 		buf.ImgURL, _ = img.Attr("src")
 		buf.Src, _ = src.Attr("href")
-		buf.Title = src.Text()
+		buf.Title, _ = src.Attr("title")
+		buf.ShortTitle = src.Text()
 		buf.Time = dd.Eq(1).Text()
 		ret = append(ret, buf)
 	})
